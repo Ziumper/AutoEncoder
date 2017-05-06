@@ -28,10 +28,10 @@ public class SingleLayerMinstExample {
         //number of rows and columns in the input pictures
         final int numRows = 28;
         final int numColumns = 28;
-        int outputNum = 10; // number of output classes
-        int batchSize = 128; // batch size for each epoch
-        int rngSeed = 123; // random number seed for reproducibility
-        int numEpochs = 15; // number of epochs to perform
+        int outputNum = 10; // ilość klas wyjściowych
+        int batchSize = 128; // ilość danych testowych i treningowych
+        int rngSeed = 123; // losowe ziarno dla inicjalizacji wag
+        int numEpochs = 15; // ilosć iteracji dla danych
 
         //Get the DataSetIterators:
         DataSetIterator mnistTrain = new MnistDataSetIterator(batchSize, true, rngSeed);
@@ -40,20 +40,21 @@ public class SingleLayerMinstExample {
 
         log.info("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .seed(rngSeed) //include a random seed for reproducibility
-                // use stochastic gradient descent as an optimization algorithm
+                .seed(rngSeed) //include a random seed for reproducibility inicjalizacja wag
+                // use stochastic gradient descent as an optimization algorithm optymalizacja funkcji
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .iterations(1)
-                .learningRate(0.006) //specify the learning rate
-                .updater(Updater.NESTEROVS).momentum(0.9) //specify the rate of change of the learning rate.
-                .regularization(true).l2(1e-4)
-                .list()
+                .iterations(1)//ilość prównań podczas procesu uczenia, do minimalizacji błędu
+                .learningRate(0.006) //specify the learning rate współczynnik uczenia sieci
+                .updater(Updater.NESTEROVS).momentum(0.9) //specify the rate of change of the learning rate. współczynnik kierunku optrymalizacji (mówi jak szybko algorytm optymalizacyjny
+                // będzie działał na loklane minimum i wagi
+                .regularization(true).l2(1e-4) // zabeczpieczenie przed dopasowaniem
+                .list() //metoda przełączająca na dodawanie kolejnych warstw
                 .layer(0, new DenseLayer.Builder() //create the first, input layer with xavier initialization
-                        .nIn(numRows * numColumns)
-                        .nOut(1000)
-                        .activation(Activation.RELU)
-                        .weightInit(WeightInit.XAVIER)
-                        .build())
+                        .nIn(numRows * numColumns) //liczba punktów wejściowych piksele
+                        .nOut(1000) //liczba punktów wyjściowych
+                        .activation(Activation.RELU) //funkcja aktywacji
+                        .weightInit(WeightInit.XAVIER) //sposob inicjalizacji wag
+                        .build()) // metoda budująca
                 .layer(1, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD) //create hidden layer
                         .nIn(1000)
                         .nOut(outputNum)
@@ -85,5 +86,10 @@ public class SingleLayerMinstExample {
         log.info(eval.stats());
         log.info("****************Example finished********************");
 
+
+//        Celność (Accuracy) - procent obrazków poprawnie sklasyfikowanych
+//        Precyzja (Precision) - liczba poprawnie określonych przez ilosć niepoprawnie określonych The number of true positives divided by the number of true positives and false positives.
+//        Odwołanie ( Recall ) - Liczba poprwanie  sklasyfikowanych podzielona przez sumę poprawnie sklasyfikowanych i źle sklasyfikowanych
+//        F1 Score - średnia ważona pomiędzy precyzją i odwolaniem
     }
 }
